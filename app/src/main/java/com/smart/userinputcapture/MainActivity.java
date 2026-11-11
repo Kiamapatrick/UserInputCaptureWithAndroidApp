@@ -74,17 +74,17 @@ public class MainActivity extends AppCompatActivity {
         }
 
         String maritalStatus = (radioGroupMarital.getCheckedRadioButtonId() == R.id.radioMarried)
-                ? "Married" : "Single";
+                ? getString(R.string.radio_married) : getString(R.string.radio_single);
 
-        String message = "Name: " + name
-                + "\nDate: " + date
-                + "\nEmail: " + email
-                + "\nMarital Status: " + maritalStatus;
+        String message = getString(R.string.dialog_label_name) + name
+                + "\n" + getString(R.string.dialog_label_date) + date
+                + "\n" + getString(R.string.dialog_label_email) + email
+                + "\n" + getString(R.string.dialog_label_marital) + maritalStatus;
 
         new AlertDialog.Builder(MainActivity.this)
-                .setTitle("Submitted Details")
+                .setTitle(R.string.dialog_title_submitted)
                 .setMessage(message)
-                .setPositiveButton("OK", null)
+                .setPositiveButton(R.string.dialog_button_ok, null)
                 .show();
     }
 
@@ -96,25 +96,25 @@ public class MainActivity extends AppCompatActivity {
         layoutEmail.setError(null);
 
         if (name.isEmpty()) {
-            layoutName.setError("Please enter your full name");
+            layoutName.setError(getString(R.string.error_name_required));
             valid = false;
         }
         if (date.isEmpty()) {
-            layoutDate.setError("Please select your date of birth");
+            layoutDate.setError(getString(R.string.error_date_required));
             valid = false;
         }
         if (email.isEmpty()) {
-            layoutEmail.setError("Please enter your email");
+            layoutEmail.setError(getString(R.string.error_email_required));
             valid = false;
         } else if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            layoutEmail.setError("Enter a valid email address");
+            layoutEmail.setError(getString(R.string.error_email_invalid));
             valid = false;
         }
         if (radioGroupMarital.getCheckedRadioButtonId() == -1) {
             new AlertDialog.Builder(this)
-                    .setTitle("Missing selection")
-                    .setMessage("Please select your marital status.")
-                    .setPositiveButton("OK", null)
+                    .setTitle(R.string.error_marital_required)
+                    .setMessage(R.string.error_marital_inline)
+                    .setPositiveButton(R.string.dialog_button_ok, null)
                     .show();
             valid = false;
         }

@@ -16,7 +16,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="4dp"
-            android:text="Welcome!"
+            android:text="@string/welcome"
             android:textSize="28sp"
             android:textStyle="bold" />
 
@@ -24,7 +24,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="32dp"
-            android:text="Please enter your details below"
+            android:text="@string/enter_details"
             android:textSize="14sp" />
 
         <!-- Full Name -->
@@ -39,7 +39,7 @@
                 android:id="@+id/editTextName"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Full Name"
+                android:hint="@string/hint_full_name"
                 android:inputType="textPersonName" />
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -58,7 +58,7 @@
                 android:clickable="true"
                 android:cursorVisible="false"
                 android:focusable="false"
-                android:hint="Date of Birth"
+                android:hint="@string/hint_date_of_birth"
                 android:inputType="none" />
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -74,7 +74,7 @@
                 android:id="@+id/editTextEmail"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Email Address"
+                android:hint="@string/hint_email_address"
                 android:inputType="textEmailAddress" />
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -83,7 +83,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
-            android:text="Marital Status"
+            android:text="@string/label_marital_status"
             android:textSize="16sp" />
 
         <RadioGroup
@@ -98,20 +98,20 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="24dp"
-                android:text="Single" />
+                android:text="@string/radio_single" />
 
             <RadioButton
                 android:id="@+id/radioMarried"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Married" />
+                android:text="@string/radio_married" />
         </RadioGroup>
 
         <Button
             android:id="@+id/buttonSubmit"
             android:layout_width="match_parent"
             android:layout_height="56dp"
-            android:text="Submit Details"
+            android:text="@string/button_submit"
             android:textSize="16sp"
             android:textStyle="bold" />
     </LinearLayout>
