@@ -26,7 +26,6 @@
 
     <!-- Confirmation dialog -->
     <string name="dialog_title_confirm">Confirm Submission</string>
-    <string name="dialog_message_confirm">Are you sure you want to submit these details?</string>
     <string name="dialog_button_confirm">Confirm</string>
     <string name="dialog_button_edit">Edit</string>
 
