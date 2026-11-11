@@ -2,7 +2,7 @@ package com.smart.userinputcapture; // change to match your own package name
 
 import android.app.DatePickerDialog;
 import android.os.Bundle;
-import android.util.Patterns;
+import android.text.TextUtils;
 import android.widget.Button;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -14,7 +14,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -23,6 +26,9 @@ public class MainActivity extends AppCompatActivity {
     private RadioGroup radioGroupMarital;
     private TextView textViewMaritalError;
     private Button buttonSubmit;
+
+    // Date format for parsing/displaying
+    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -105,25 +111,45 @@ public class MainActivity extends AppCompatActivity {
         layoutEmail.setError(null);
         textViewMaritalError.setVisibility(TextView.GONE);
 
-        if (name.isEmpty()) {
+        // Validate name using Validators
+        if (!Validators.isValidName(name)) {
             layoutName.setError(getString(R.string.error_name_required));
             valid = false;
         }
-        if (date.isEmpty()) {
+
+        // Validate date
+        if (TextUtils.isEmpty(date)) {
             layoutDate.setError(getString(R.string.error_date_required));
             valid = false;
+        } else {
+            // Check if adult (18+)
+            try {
+                Date dob = DATE_FORMAT.parse(date);
+                Calendar dobCal = Calendar.getInstance();
+                dobCal.setTime(dob);
+                Calendar today = Calendar.getInstance();
+                if (!Validators.isAdult(dobCal, today)) {
+                    layoutDate.setError(getString(R.string.error_date_required)); // reuse or add new string
+                    valid = false;
+                }
+            } catch (Exception e) {
+                layoutDate.setError(getString(R.string.error_date_required));
+                valid = false;
+            }
         }
-        if (email.isEmpty()) {
-            layoutEmail.setError(getString(R.string.error_email_required));
-            valid = false;
-        } else if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+
+        // Validate email using Validators
+        if (!Validators.isValidEmail(email)) {
             layoutEmail.setError(getString(R.string.error_email_invalid));
             valid = false;
         }
+
+        // Validate marital status
         if (radioGroupMarital.getCheckedRadioButtonId() == -1) {
             textViewMaritalError.setVisibility(TextView.VISIBLE);
             valid = false;
         }
+
         return valid;
     }
 }
