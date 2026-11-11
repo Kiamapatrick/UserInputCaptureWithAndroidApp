@@ -4,27 +4,21 @@ A simple Android application that demonstrates capturing and validating user inp
 
 ## Features
 
-- **Full Name Input** - Text field with validation
-- **Date of Birth** - Date picker dialog with future date prevention
-- **Email Address** - Email format validation using Android's `Patterns.EMAIL_ADDRESS`
-- **Marital Status** - Radio buttons (Single/Married) with selection validation
-- **Input Validation** - Real-time error messages for invalid/missing fields
-- **Summary Dialog** - Displays all captured data in an alert dialog on successful submission
-
-## Screenshots
-
-| Input Form | Date Picker | Validation Error | Success Dialog |
-|------------|-------------|------------------|----------------|
-| ![Form](docs/screenshots/form.png) | ![Date Picker](docs/screenshots/date_picker.png) | ![Validation](docs/screenshots/validation.png) | ![Success](docs/screenshots/success.png) |
+- **Full Name Input** - Text field with validation (min 2 words, letters/spaces/hyphens/apostrophes only)
+- **Date of Birth** - Date picker dialog with calendar end icon, future date prevention, min date 1900, default 18 years ago
+- **Email Address** - Email format validation using custom regex
+- **Marital Status** - Radio buttons (Single/Married) with inline error validation
+- **Input Validation** - Real-time error clearing on text change, focus first invalid field on submit
+- **Confirmation Dialog** - AlertDialog with Confirm/Edit buttons, Snackbar on confirm, form reset
 
 ## Tech Stack
 
 - **Language**: Java
 - **Min SDK**: 24 (Android 7.0 Nougat)
-- **Target SDK**: 34 (Android 14)
+- **Target SDK**: 36 (Android 16)
 - **Build System**: Gradle (Kotlin DSL)
-- **UI Components**: Material Components (TextInputLayout, TextInputEditText, RadioGroup)
-- **Architecture**: Single Activity with View Binding
+- **UI Components**: Material3 (TextInputLayout, TextInputEditText, RadioGroup, Snackbar)
+- **Architecture**: Single Activity with findViewById (no ViewBinding)
 
 ## Project Structure
 
@@ -33,18 +27,22 @@ UserInputCaptureWithAndroidApp/
 ├── app/
 │   ├── src/main/
 │   │   ├── java/com/smart/userinputcapture/
-│   │   │   └── MainActivity.java          # Main activity with form logic
+│   │   │   ├── MainActivity.java          # Main activity with form logic
+│   │   │   └── Validators.java            # Plain Java validation logic (no Android deps)
 │   │   ├── res/
 │   │   │   ├── layout/
 │   │   │   │   └── activity_main.xml      # UI layout with ScrollView
 │   │   │   ├── values/
-│   │   │   │   ├── strings.xml            # App name
+│   │   │   │   ├── strings.xml            # All UI text
 │   │   │   │   ├── colors.xml             # Color definitions
-│   │   │   │   └── themes.xml             # Material theme
+│   │   │   │   └── themes.xml             # Material3 theme
 │   │   │   └── xml/
 │   │   │       ├── backup_rules.xml       # Backup configuration
 │   │   │       └── data_extraction_rules.xml
 │   │   └── AndroidManifest.xml
+│   ├── src/test/
+│   │   └── java/com/smart/userinputcapture/
+│   │       └── ValidatorsTest.java        # JUnit tests for Validators
 │   └── build.gradle.kts
 ├── build.gradle.kts
 ├── settings.gradle.kts
@@ -57,7 +55,7 @@ UserInputCaptureWithAndroidApp/
 
 - Android Studio Flamingo (2022.2.1) or later
 - JDK 17 or later
-- Android SDK 34
+- Android SDK 36
 
 ### Installation
 
@@ -79,68 +77,92 @@ UserInputCaptureWithAndroidApp/
 
 # Release build (requires signing config)
 ./gradlew assembleRelease
+
+# Run unit tests
+./gradlew test
 ```
 
 ## Usage
 
 1. Launch the app
-2. Enter your **Full Name**
-3. Tap **Date of Birth** field to open the date picker (future dates are disabled)
+2. Enter your **Full Name** (minimum 2 words, letters/spaces/hyphens/apostrophes only)
+3. Tap **Date of Birth** field or calendar icon to open the date picker (future dates disabled, min 1900, defaults to 18 years ago)
 4. Enter your **Email Address**
 5. Select **Marital Status** (Single or Married)
 6. Tap **Submit Details**
-7. View the summary dialog with all entered information
+7. Confirm dialog appears - tap **Confirm** to submit (shows Snackbar, resets form) or **Edit** to return
 
 ## Validation Rules
 
 | Field | Rule |
 |-------|------|
-| Full Name | Required, non-empty |
-| Date of Birth | Required, must select a date (not future) |
-| Email | Required, valid email format |
+| Full Name | Required, min 2 words, letters/spaces/hyphens/apostrophes only |
+| Date of Birth | Required, not future, not before 1900, must be 18+ years old |
+| Email | Required, valid email format (custom regex) |
 | Marital Status | Required, must select one option |
 
 ## Key Implementation Details
 
+### Validators (`Validators.java`)
+Plain Java class with no Android dependencies:
+```java
+public static boolean isValidName(String name) {
+    // min 2 words, letters/spaces/hyphens/apostrophes only
+}
+
+public static boolean isValidEmail(String email) {
+    // custom regex pattern
+}
+
+public static boolean isAdult(Calendar dob, Calendar today, int minAge) {
+    // age calculation
+}
+```
+
 ### Date Picker (`MainActivity.java`)
 ```java
 private void showDatePicker() {
-    Calendar cal = Calendar.getInstance();
-    DatePickerDialog picker = new DatePickerDialog(
-        this,
-        (view, year, month, day) -> {
-            String date = day + "/" + (month + 1) + "/" + year;
-            editTextDate.setText(date);
-        },
-        year, month, day);
-    picker.getDatePicker().setMaxDate(System.currentTimeMillis()); // No future dates
+    Calendar today = Calendar.getInstance();
+    Calendar initialDate = (selectedDob != null) ? (Calendar) selectedDob.clone() : today;
+    if (selectedDob == null) initialDate.add(Calendar.YEAR, -18);
+
+    DatePickerDialog picker = new DatePickerDialog(this, (view, y, m, d) -> {
+        selectedDob = Calendar.getInstance();
+        selectedDob.set(y, m, d);
+        editTextDate.setText(DATE_FORMAT.format(selectedDob.getTime()));
+    }, year, month, day);
+
+    picker.getDatePicker().setMaxDate(today.getTimeInMillis());
+    Calendar minDate = Calendar.getInstance();
+    minDate.set(1900, Calendar.JANUARY, 1);
+    picker.getDatePicker().setMinDate(minDate.getTimeInMillis());
     picker.show();
 }
 ```
 
-### Email Validation
-Uses Android's built-in `Patterns.EMAIL_ADDRESS.matcher(email).matches()`
+### Form Validation & UX
+- Errors cleared on text change via `TextWatcher`
+- On submit, first invalid field focused and keyboard hidden
+- Confirmation dialog with `setCancelable(false)`, Confirm/Edit buttons
+- Snackbar shown on confirm, form reset
 
-### Form Validation
-All fields validated on submit with error messages displayed via `TextInputLayout.setError()`
+### Rotation Support
+- `onSaveInstanceState` / restore in `onCreate`
+- Saves selected date, error states, marital error visibility
 
 ## Dependencies
 
 ```kotlin
 // app/build.gradle.kts
 dependencies {
-    implementation("androidx.appcompat:appcompat:1.6.1")
-    implementation("com.google.android.material:material:1.11.0")
-    implementation("androidx.constraintlayout:constraintlayout:2.1.4")
-    testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test.ext:junit:1.1.5")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+    implementation(libs.appcompat)
+    implementation(libs.constraintlayout)
+    implementation(libs.material)
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.espresso.core)
+    androidTestImplementation(libs.ext.junit)
 }
 ```
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Author
 
