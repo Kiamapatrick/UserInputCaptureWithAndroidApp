@@ -232,10 +232,7 @@ public class MainActivity extends AppCompatActivity {
         RadioButton checkedRadioButton = findViewById(checkedId);
         String maritalStatus = checkedRadioButton != null ? checkedRadioButton.getText().toString() : "";
 
-        String message = getString(R.string.dialog_label_name) + name
-                + "\n" + getString(R.string.dialog_label_date) + date
-                + "\n" + getString(R.string.dialog_label_email) + email
-                + "\n" + getString(R.string.dialog_label_marital) + maritalStatus;
+        String message = getString(R.string.dialog_summary, name, date, email, maritalStatus);
 
         // Show confirmation dialog
         new AlertDialog.Builder(MainActivity.this)

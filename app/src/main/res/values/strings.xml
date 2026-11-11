@@ -17,20 +17,12 @@
     <!-- Validation errors -->
     <string name="error_name_required">Please enter your full name</string>
     <string name="error_date_required">Please select your date of birth</string>
-    <string name="error_email_required">Please enter your email</string>
+    <string name="error_date_underage">You must be at least 18 years old</string>
     <string name="error_email_invalid">Enter a valid email address</string>
-    <string name="error_marital_required">Please select your marital status</string>
+    <string name="error_marital_inline">Please select your marital status</string>
 
     <!-- Submit dialog -->
-    <string name="dialog_title_submitted">Submitted Details</string>
-    <string name="dialog_label_name">Name: </string>
-    <string name="dialog_label_date">Date: </string>
-    <string name="dialog_label_email">Email: </string>
-    <string name="dialog_label_marital">Marital Status: </string>
-    <string name="dialog_button_ok">OK</string>
-
-    <!-- Marital status error (inline) -->
-    <string name="error_marital_inline">Please select your marital status</string>
+    <string name="dialog_summary">Name: %1$s\nDate: %2$s\nEmail: %3$s\nMarital Status: %4$s</string>
 
     <!-- Confirmation dialog -->
     <string name="dialog_title_confirm">Confirm Submission</string>
