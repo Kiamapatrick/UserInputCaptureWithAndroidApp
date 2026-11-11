@@ -16,6 +16,7 @@ import android.widget.TextView;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
@@ -31,6 +32,7 @@ public class MainActivity extends AppCompatActivity {
     private RadioGroup radioGroupMarital;
     private TextView textViewMaritalError;
     private Button buttonSubmit;
+    private View rootLayout;
 
     // Date format for parsing/displaying
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
@@ -56,6 +58,7 @@ public class MainActivity extends AppCompatActivity {
         radioGroupMarital = findViewById(R.id.radioGroupMarital);
         textViewMaritalError = findViewById(R.id.textViewMaritalError);
         buttonSubmit = findViewById(R.id.buttonSubmit);
+        rootLayout = findViewById(android.R.id.content);
 
         // Clear errors on text change
         setupErrorClearing();
@@ -169,11 +172,33 @@ public class MainActivity extends AppCompatActivity {
                 + "\n" + getString(R.string.dialog_label_email) + email
                 + "\n" + getString(R.string.dialog_label_marital) + maritalStatus;
 
+        // Show confirmation dialog
         new AlertDialog.Builder(MainActivity.this)
-                .setTitle(R.string.dialog_title_submitted)
+                .setTitle(R.string.dialog_title_confirm)
                 .setMessage(message)
-                .setPositiveButton(R.string.dialog_button_ok, null)
+                .setCancelable(false)
+                .setPositiveButton(R.string.dialog_button_confirm, (dialog, which) -> {
+                    // Confirm: show Snackbar and reset form
+                    Snackbar.make(rootLayout, R.string.snackbar_submitted, Snackbar.LENGTH_LONG).show();
+                    resetForm();
+                })
+                .setNegativeButton(R.string.dialog_button_edit, (dialog, which) -> {
+                    // Edit: just close dialog
+                    dialog.dismiss();
+                })
                 .show();
+    }
+
+    private void resetForm() {
+        editTextName.setText("");
+        editTextDate.setText("");
+        editTextEmail.setText("");
+        radioGroupMarital.clearCheck();
+        selectedDob = null;
+        layoutName.setError(null);
+        layoutDate.setError(null);
+        layoutEmail.setError(null);
+        textViewMaritalError.setVisibility(TextView.GONE);
     }
 
     private boolean validate(String name, String date, String email) {
