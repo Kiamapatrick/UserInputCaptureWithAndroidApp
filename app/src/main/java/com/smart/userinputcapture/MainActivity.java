@@ -30,6 +30,9 @@ public class MainActivity extends AppCompatActivity {
     // Date format for parsing/displaying
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
 
+    // Selected date of birth
+    private Calendar selectedDob;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -57,23 +60,40 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void showDatePicker() {
-        Calendar cal = Calendar.getInstance();
-        int year = cal.get(Calendar.YEAR);
-        int month = cal.get(Calendar.MONTH);
-        int day = cal.get(Calendar.DAY_OF_MONTH);
+        Calendar today = Calendar.getInstance();
+
+        // Default to 18 years ago if no date selected yet
+        Calendar initialDate;
+        if (selectedDob != null) {
+            initialDate = (Calendar) selectedDob.clone();
+        } else {
+            initialDate = (Calendar) today.clone();
+            initialDate.add(Calendar.YEAR, -18);
+        }
+
+        int year = initialDate.get(Calendar.YEAR);
+        int month = initialDate.get(Calendar.MONTH);
+        int day = initialDate.get(Calendar.DAY_OF_MONTH);
 
         DatePickerDialog picker = new DatePickerDialog(
                 this,
                 (view, selectedYear, selectedMonth, selectedDay) -> {
-                    // Month is zero-based, so add 1
-                    String date = selectedDay + "/" + (selectedMonth + 1) + "/" + selectedYear;
+                    selectedDob = Calendar.getInstance();
+                    selectedDob.set(selectedYear, selectedMonth, selectedDay);
+                    String date = DATE_FORMAT.format(selectedDob.getTime());
                     editTextDate.setText(date);
                     layoutDate.setError(null);
                 },
                 year, month, day);
 
-        // Prevent choosing a future date of birth
-        picker.getDatePicker().setMaxDate(System.currentTimeMillis());
+        // Set max date to today
+        picker.getDatePicker().setMaxDate(today.getTimeInMillis());
+
+        // Set min date to 1 Jan 1900
+        Calendar minDate = Calendar.getInstance();
+        minDate.set(1900, Calendar.JANUARY, 1);
+        picker.getDatePicker().setMinDate(minDate.getTimeInMillis());
+
         picker.show();
     }
 
