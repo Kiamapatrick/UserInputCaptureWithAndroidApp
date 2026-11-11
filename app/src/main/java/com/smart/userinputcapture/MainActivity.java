@@ -1,8 +1,13 @@
 package com.smart.userinputcapture; // change to match your own package name
 
 import android.app.DatePickerDialog;
+import android.content.Context;
 import android.os.Bundle;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
+import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -33,6 +38,9 @@ public class MainActivity extends AppCompatActivity {
     // Selected date of birth
     private Calendar selectedDob;
 
+    // Track first invalid field for focus
+    private View firstInvalidField;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -49,6 +57,9 @@ public class MainActivity extends AppCompatActivity {
         textViewMaritalError = findViewById(R.id.textViewMaritalError);
         buttonSubmit = findViewById(R.id.buttonSubmit);
 
+        // Clear errors on text change
+        setupErrorClearing();
+
         // Open the calendar when the date field is tapped
         editTextDate.setOnClickListener(v -> showDatePicker());
 
@@ -57,6 +68,41 @@ public class MainActivity extends AppCompatActivity {
 
         // Show the summary dialog on submit
         buttonSubmit.setOnClickListener(v -> onSubmit());
+    }
+
+    private void setupErrorClearing() {
+        // Clear name error on text change
+        editTextName.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                layoutName.setError(null);
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
+
+        // Clear email error on text change
+        editTextEmail.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                layoutEmail.setError(null);
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
+
+        // Clear marital error when selection changes
+        radioGroupMarital.setOnCheckedChangeListener((group, checkedId) -> {
+            textViewMaritalError.setVisibility(TextView.GONE);
+        });
     }
 
     private void showDatePicker() {
@@ -102,7 +148,14 @@ public class MainActivity extends AppCompatActivity {
         String date = editTextDate.getText().toString().trim();
         String email = editTextEmail.getText().toString().trim();
 
+        firstInvalidField = null;
+
         if (!validate(name, date, email)) {
+            // Focus first invalid field and hide keyboard
+            if (firstInvalidField != null) {
+                firstInvalidField.requestFocus();
+                hideKeyboard(firstInvalidField);
+            }
             return;
         }
 
@@ -134,12 +187,14 @@ public class MainActivity extends AppCompatActivity {
         // Validate name using Validators
         if (!Validators.isValidName(name)) {
             layoutName.setError(getString(R.string.error_name_required));
+            if (firstInvalidField == null) firstInvalidField = editTextName;
             valid = false;
         }
 
         // Validate date
         if (TextUtils.isEmpty(date)) {
             layoutDate.setError(getString(R.string.error_date_required));
+            if (firstInvalidField == null) firstInvalidField = editTextDate;
             valid = false;
         } else {
             // Check if adult (18+)
@@ -149,11 +204,13 @@ public class MainActivity extends AppCompatActivity {
                 dobCal.setTime(dob);
                 Calendar today = Calendar.getInstance();
                 if (!Validators.isAdult(dobCal, today)) {
-                    layoutDate.setError(getString(R.string.error_date_required)); // reuse or add new string
+                    layoutDate.setError(getString(R.string.error_date_required));
+                    if (firstInvalidField == null) firstInvalidField = editTextDate;
                     valid = false;
                 }
             } catch (Exception e) {
                 layoutDate.setError(getString(R.string.error_date_required));
+                if (firstInvalidField == null) firstInvalidField = editTextDate;
                 valid = false;
             }
         }
@@ -161,15 +218,24 @@ public class MainActivity extends AppCompatActivity {
         // Validate email using Validators
         if (!Validators.isValidEmail(email)) {
             layoutEmail.setError(getString(R.string.error_email_invalid));
+            if (firstInvalidField == null) firstInvalidField = editTextEmail;
             valid = false;
         }
 
         // Validate marital status
         if (radioGroupMarital.getCheckedRadioButtonId() == -1) {
             textViewMaritalError.setVisibility(TextView.VISIBLE);
+            if (firstInvalidField == null) firstInvalidField = radioGroupMarital;
             valid = false;
         }
 
         return valid;
+    }
+
+    private void hideKeyboard(View view) {
+        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        if (imm != null) {
+            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
     }
 }
