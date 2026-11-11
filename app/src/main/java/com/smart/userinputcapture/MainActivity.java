@@ -4,7 +4,9 @@ import android.app.DatePickerDialog;
 import android.os.Bundle;
 import android.util.Patterns;
 import android.widget.Button;
+import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -19,6 +21,7 @@ public class MainActivity extends AppCompatActivity {
     private TextInputLayout layoutName, layoutDate, layoutEmail;
     private TextInputEditText editTextName, editTextDate, editTextEmail;
     private RadioGroup radioGroupMarital;
+    private TextView textViewMaritalError;
     private Button buttonSubmit;
 
     @Override
@@ -34,6 +37,7 @@ public class MainActivity extends AppCompatActivity {
         editTextDate = findViewById(R.id.editTextDate);
         editTextEmail = findViewById(R.id.editTextEmail);
         radioGroupMarital = findViewById(R.id.radioGroupMarital);
+        textViewMaritalError = findViewById(R.id.textViewMaritalError);
         buttonSubmit = findViewById(R.id.buttonSubmit);
 
         // Open the calendar when the date field is tapped
@@ -76,8 +80,10 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        String maritalStatus = (radioGroupMarital.getCheckedRadioButtonId() == R.id.radioMarried)
-                ? getString(R.string.radio_married) : getString(R.string.radio_single);
+        // Read selected marital status from RadioButton's text
+        int checkedId = radioGroupMarital.getCheckedRadioButtonId();
+        RadioButton checkedRadioButton = findViewById(checkedId);
+        String maritalStatus = checkedRadioButton != null ? checkedRadioButton.getText().toString() : "";
 
         String message = getString(R.string.dialog_label_name) + name
                 + "\n" + getString(R.string.dialog_label_date) + date
@@ -97,6 +103,7 @@ public class MainActivity extends AppCompatActivity {
         layoutName.setError(null);
         layoutDate.setError(null);
         layoutEmail.setError(null);
+        textViewMaritalError.setVisibility(TextView.GONE);
 
         if (name.isEmpty()) {
             layoutName.setError(getString(R.string.error_name_required));
@@ -114,11 +121,7 @@ public class MainActivity extends AppCompatActivity {
             valid = false;
         }
         if (radioGroupMarital.getCheckedRadioButtonId() == -1) {
-            new AlertDialog.Builder(this)
-                    .setTitle(R.string.error_marital_required)
-                    .setMessage(R.string.error_marital_inline)
-                    .setPositiveButton(R.string.dialog_button_ok, null)
-                    .show();
+            textViewMaritalError.setVisibility(TextView.VISIBLE);
             valid = false;
         }
         return valid;

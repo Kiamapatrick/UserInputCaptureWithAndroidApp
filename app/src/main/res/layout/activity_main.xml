@@ -94,7 +94,7 @@
             android:id="@+id/radioGroupMarital"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="24dp"
+            android:layout_marginBottom="8dp"
             android:orientation="horizontal">
 
             <RadioButton
@@ -110,6 +110,17 @@
                 android:layout_height="wrap_content"
                 android:text="@string/radio_married" />
         </RadioGroup>
+
+        <!-- Marital status error (inline) -->
+        <TextView
+            android:id="@+id/textViewMaritalError"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:visibility="gone"
+            android:text="@string/error_marital_inline"
+            android:textColor="@android:color/holo_red_dark"
+            android:textSize="12sp" />
 
         <Button
             android:id="@+id/buttonSubmit"
