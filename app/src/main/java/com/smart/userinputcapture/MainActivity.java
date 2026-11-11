@@ -43,6 +43,13 @@ public class MainActivity extends AppCompatActivity {
     // Track first invalid field for focus
     private View firstInvalidField;
 
+    // Keys for saved instance state
+    private static final String KEY_SELECTED_DOB = "selected_dob";
+    private static final String KEY_NAME_ERROR = "name_error";
+    private static final String KEY_DATE_ERROR = "date_error";
+    private static final String KEY_EMAIL_ERROR = "email_error";
+    private static final String KEY_MARITAL_ERROR_VISIBLE = "marital_error_visible";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -60,6 +67,11 @@ public class MainActivity extends AppCompatActivity {
         buttonSubmit = findViewById(R.id.buttonSubmit);
         rootLayout = findViewById(android.R.id.content);
 
+        // Restore state
+        if (savedInstanceState != null) {
+            restoreState(savedInstanceState);
+        }
+
         // Clear errors on text change
         setupErrorClearing();
 
@@ -71,6 +83,59 @@ public class MainActivity extends AppCompatActivity {
 
         // Show the summary dialog on submit
         buttonSubmit.setOnClickListener(v -> onSubmit());
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        // Save selected date of birth
+        if (selectedDob != null) {
+            outState.putLong(KEY_SELECTED_DOB, selectedDob.getTimeInMillis());
+        }
+        // Save error states
+        CharSequence nameError = layoutName.getError();
+        if (nameError != null) {
+            outState.putString(KEY_NAME_ERROR, nameError.toString());
+        }
+        CharSequence dateError = layoutDate.getError();
+        if (dateError != null) {
+            outState.putString(KEY_DATE_ERROR, dateError.toString());
+        }
+        CharSequence emailError = layoutEmail.getError();
+        if (emailError != null) {
+            outState.putString(KEY_EMAIL_ERROR, emailError.toString());
+        }
+        // Save marital error visibility
+        outState.putBoolean(KEY_MARITAL_ERROR_VISIBLE, textViewMaritalError.getVisibility() == View.VISIBLE);
+    }
+
+    private void restoreState(Bundle savedInstanceState) {
+        // Restore selected date of birth
+        long dobMillis = savedInstanceState.getLong(KEY_SELECTED_DOB, -1);
+        if (dobMillis != -1) {
+            selectedDob = Calendar.getInstance();
+            selectedDob.setTimeInMillis(dobMillis);
+            editTextDate.setText(DATE_FORMAT.format(selectedDob.getTime()));
+        }
+
+        // Restore error states
+        String nameError = savedInstanceState.getString(KEY_NAME_ERROR);
+        if (nameError != null) {
+            layoutName.setError(nameError);
+        }
+        String dateError = savedInstanceState.getString(KEY_DATE_ERROR);
+        if (dateError != null) {
+            layoutDate.setError(dateError);
+        }
+        String emailError = savedInstanceState.getString(KEY_EMAIL_ERROR);
+        if (emailError != null) {
+            layoutEmail.setError(emailError);
+        }
+        // Restore marital error visibility
+        boolean maritalErrorVisible = savedInstanceState.getBoolean(KEY_MARITAL_ERROR_VISIBLE, false);
+        if (maritalErrorVisible) {
+            textViewMaritalError.setVisibility(View.VISIBLE);
+        }
     }
 
     private void setupErrorClearing() {
@@ -104,7 +169,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Clear marital error when selection changes
         radioGroupMarital.setOnCheckedChangeListener((group, checkedId) -> {
-            textViewMaritalError.setVisibility(TextView.GONE);
+            textViewMaritalError.setVisibility(View.GONE);
         });
     }
 
@@ -198,7 +263,7 @@ public class MainActivity extends AppCompatActivity {
         layoutName.setError(null);
         layoutDate.setError(null);
         layoutEmail.setError(null);
-        textViewMaritalError.setVisibility(TextView.GONE);
+        textViewMaritalError.setVisibility(View.GONE);
     }
 
     private boolean validate(String name, String date, String email) {
@@ -207,7 +272,7 @@ public class MainActivity extends AppCompatActivity {
         layoutName.setError(null);
         layoutDate.setError(null);
         layoutEmail.setError(null);
-        textViewMaritalError.setVisibility(TextView.GONE);
+        textViewMaritalError.setVisibility(View.GONE);
 
         // Validate name using Validators
         if (!Validators.isValidName(name)) {
@@ -249,7 +314,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Validate marital status
         if (radioGroupMarital.getCheckedRadioButtonId() == -1) {
-            textViewMaritalError.setVisibility(TextView.VISIBLE);
+            textViewMaritalError.setVisibility(View.VISIBLE);
             if (firstInvalidField == null) firstInvalidField = radioGroupMarital;
             valid = false;
         }
