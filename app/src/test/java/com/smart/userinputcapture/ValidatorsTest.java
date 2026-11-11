@@ -57,6 +57,24 @@ public class ValidatorsTest {
         assertFalse(Validators.isValidName("John#Doe"));
     }
 
+    @Test
+    public void isValidName_onlyHyphensAndSpaces_returnsFalse() {
+        assertFalse(Validators.isValidName("- -"));
+    }
+
+    @Test
+    public void isValidName_onlyApostrophesAndSpaces_returnsFalse() {
+        assertFalse(Validators.isValidName("' '"));
+    }
+
+    @Test
+    public void isValidName_unicodeLetters_valid() {
+        assertTrue(Validators.isValidName("José Mwangi"));
+        assertTrue(Validators.isValidName("Mary-Jane O'Neil"));
+        assertTrue(Validators.isValidName("François-Xavier Dupont"));
+        assertTrue(Validators.isValidName("Müller Schmidt"));
+    }
+
     // isValidEmail tests
     @Test
     public void isValidEmail_validSimple_returnsTrue() {

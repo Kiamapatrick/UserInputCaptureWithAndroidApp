@@ -9,8 +9,9 @@ public class Validators {
             "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$"
     );
 
+    // Allow Unicode letters (\p{L}), spaces, hyphens, apostrophes
     private static final Pattern NAME_PATTERN = Pattern.compile(
-            "^[A-Za-z\\s'-]+$"
+            "^[\\p{L}\\s'-]+$"
     );
 
     public static boolean isValidName(String name) {
@@ -18,13 +19,22 @@ public class Validators {
             return false;
         }
         String trimmed = name.trim();
-        // Check pattern: letters, spaces, hyphens, apostrophes only
+        // Check pattern: Unicode letters, spaces, hyphens, apostrophes only
         if (!NAME_PATTERN.matcher(trimmed).matches()) {
             return false;
         }
         // Check minimum 2 words
         String[] words = trimmed.split("\\s+");
-        return words.length >= 2;
+        if (words.length < 2) {
+            return false;
+        }
+        // EVERY word must contain at least one letter
+        for (String word : words) {
+            if (!word.matches(".*\\p{L}.*")) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public static boolean isValidEmail(String email) {
