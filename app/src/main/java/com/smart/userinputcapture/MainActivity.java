@@ -39,6 +39,9 @@ public class MainActivity extends AppCompatActivity {
         // Open the calendar when the date field is tapped
         editTextDate.setOnClickListener(v -> showDatePicker());
 
+        // Open the calendar when the end icon is tapped
+        layoutDate.setEndIconOnClickListener(v -> showDatePicker());
+
         // Show the summary dialog on submit
         buttonSubmit.setOnClickListener(v -> onSubmit());
     }
