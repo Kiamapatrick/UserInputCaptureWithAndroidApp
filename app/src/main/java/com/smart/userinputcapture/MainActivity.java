@@ -291,7 +291,7 @@ public class MainActivity extends AppCompatActivity {
                 dobCal.setTime(dob);
                 Calendar today = Calendar.getInstance();
                 if (!Validators.isAdult(dobCal, today)) {
-                    layoutDate.setError(getString(R.string.error_date_required));
+                    layoutDate.setError(getString(R.string.error_date_underage));
                     if (firstInvalidField == null) firstInvalidField = editTextDate;
                     valid = false;
                 }
