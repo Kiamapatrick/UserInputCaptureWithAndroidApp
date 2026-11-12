@@ -4,12 +4,12 @@ A simple Android application that demonstrates capturing and validating user inp
 
 ## Features
 
-- **Full Name Input** - Text field with validation (min 2 words, letters/spaces/hyphens/apostrophes only)
+- **Full Name Input** - Text field with validation (min 2 words, Unicode letters/spaces/hyphens/apostrophes only, auto-capitalization)
 - **Date of Birth** - Date picker dialog with calendar end icon, future date prevention, min date 1900, default 18 years ago
 - **Email Address** - Email format validation using custom regex
 - **Marital Status** - Radio buttons (Single/Married) with inline error validation
 - **Input Validation** - Real-time error clearing on text change, focus first invalid field on submit
-- **Confirmation Dialog** - AlertDialog with Confirm/Edit buttons, Snackbar on confirm, form reset
+- **Confirmation Dialog** - AlertDialog with Confirm/Edit buttons, formatted summary, Snackbar on confirm, form reset
 
 ## Tech Stack
 
@@ -85,21 +85,21 @@ UserInputCaptureWithAndroidApp/
 ## Usage
 
 1. Launch the app
-2. Enter your **Full Name** (minimum 2 words, letters/spaces/hyphens/apostrophes only)
+2. Enter your **Full Name** (minimum 2 words, Unicode letters/spaces/hyphens/apostrophes only, auto-capitalized)
 3. Tap **Date of Birth** field or calendar icon to open the date picker (future dates disabled, min 1900, defaults to 18 years ago)
 4. Enter your **Email Address**
 5. Select **Marital Status** (Single or Married)
 6. Tap **Submit Details**
-7. Confirm dialog appears - tap **Confirm** to submit (shows Snackbar, resets form) or **Edit** to return
+7. Confirm dialog appears with formatted summary - tap **Confirm** to submit (shows Snackbar, resets form) or **Edit** to return
 
 ## Validation Rules
 
 | Field | Rule |
 |-------|------|
-| Full Name | Required, min 2 words, letters/spaces/hyphens/apostrophes only |
-| Date of Birth | Required, not future, not before 1900, must be 18+ years old |
+| Full Name | Required, min 2 words, Unicode letters/spaces/hyphens/apostrophes only, every word must contain a letter |
+| Date of Birth | Required, not future, not before 1900, must be 18+ years old (shows "You must be at least 18 years old" if underage) |
 | Email | Required, valid email format (custom regex) |
-| Marital Status | Required, must select one option |
+| Marital Status | Required, must select one option (inline error) |
 
 ## Key Implementation Details
 
@@ -107,7 +107,8 @@ UserInputCaptureWithAndroidApp/
 Plain Java class with no Android dependencies:
 ```java
 public static boolean isValidName(String name) {
-    // min 2 words, letters/spaces/hyphens/apostrophes only
+    // min 2 words, Unicode letters (\p{L})/spaces/hyphens/apostrophes only
+    // every word must contain at least one letter
 }
 
 public static boolean isValidEmail(String email) {
@@ -144,6 +145,7 @@ private void showDatePicker() {
 - Errors cleared on text change via `TextWatcher`
 - On submit, first invalid field focused and keyboard hidden
 - Confirmation dialog with `setCancelable(false)`, Confirm/Edit buttons
+- Formatted summary string: `Name: %1$s\nDate: %2$s\nEmail: %3$s\nMarital Status: %4$s`
 - Snackbar shown on confirm, form reset
 
 ### Rotation Support
@@ -162,6 +164,16 @@ dependencies {
     androidTestImplementation(libs.espresso.core)
     androidTestImplementation(libs.ext.junit)
 }
+```
+
+## Testing
+
+- 23 JUnit tests for `Validators` class (all passing)
+- Covers: name validation (Unicode, edge cases), email validation, age calculation
+
+Run tests with:
+```bash
+./gradlew test
 ```
 
 ## Author
