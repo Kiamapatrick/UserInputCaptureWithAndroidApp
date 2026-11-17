@@ -9,6 +9,7 @@
     <string name="hint_full_name">Full Name</string>
     <string name="hint_date_of_birth">Date of Birth</string>
     <string name="hint_email_address">Email Address</string>
+    <string name="hint_notes">Notes (optional)</string>
     <string name="label_marital_status">Marital Status</string>
     <string name="radio_single">Single</string>
     <string name="radio_married">Married</string>
@@ -21,8 +22,11 @@
     <string name="error_email_invalid">Enter a valid email address</string>
     <string name="error_marital_inline">Please select your marital status</string>
 
+    <!-- Optional notes -->
+    <string name="notes_none">None</string>
+
     <!-- Submit dialog -->
-    <string name="dialog_summary">Name: %1$s\nDate: %2$s\nEmail: %3$s\nMarital Status: %4$s</string>
+    <string name="dialog_summary">Name: %1$s\nDate: %2$s\nEmail: %3$s\nMarital Status: %4$s\nNotes: %5$s</string>
 
     <!-- Confirmation dialog -->
     <string name="dialog_title_confirm">Confirm Submission</string>
@@ -31,4 +35,7 @@
 
     <!-- Snackbar -->
     <string name="snackbar_submitted">Details submitted successfully</string>
+
+    <!-- Accessibility -->
+    <string name="date_picker_icon_description">Choose date of birth</string>
 </resources>

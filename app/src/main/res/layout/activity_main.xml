@@ -2,6 +2,7 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/scrollView"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
@@ -53,7 +54,7 @@
             android:layout_marginBottom="16dp"
             app:endIconMode="custom"
             app:endIconDrawable="@android:drawable/ic_menu_my_calendar"
-            app:endIconContentDescription="@string/hint_date_of_birth">
+            app:endIconContentDescription="@string/date_picker_icon_description">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/editTextDate"
@@ -61,7 +62,8 @@
                 android:layout_height="wrap_content"
                 android:clickable="true"
                 android:cursorVisible="false"
-                android:focusable="false"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
                 android:hint="@string/hint_date_of_birth"
                 android:inputType="none" />
         </com.google.android.material.textfield.TextInputLayout>
@@ -80,6 +82,23 @@
                 android:layout_height="wrap_content"
                 android:hint="@string/hint_email_address"
                 android:inputType="textEmailAddress" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Notes (optional) -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/layoutNotes"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/editTextNotes"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/hint_notes"
+                android:inputType="textMultiLine|textCapSentences"
+                android:maxLines="3" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Marital Status -->
@@ -120,7 +139,8 @@
             android:visibility="gone"
             android:text="@string/error_marital_inline"
             android:textColor="@android:color/holo_red_dark"
-            android:textSize="12sp" />
+            android:textSize="12sp"
+            android:accessibilityLiveRegion="polite" />
 
         <Button
             android:id="@+id/buttonSubmit"

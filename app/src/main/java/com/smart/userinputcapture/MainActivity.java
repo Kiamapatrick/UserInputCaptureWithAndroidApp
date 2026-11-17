@@ -6,11 +6,14 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AlertDialog;
@@ -27,12 +30,15 @@ import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
 
-    private TextInputLayout layoutName, layoutDate, layoutEmail;
-    private TextInputEditText editTextName, editTextDate, editTextEmail;
+    private static final String LOG_TAG = "FormValidation";
+
+    private TextInputLayout layoutName, layoutDate, layoutEmail, layoutNotes;
+    private TextInputEditText editTextName, editTextDate, editTextEmail, editTextNotes;
     private RadioGroup radioGroupMarital;
     private TextView textViewMaritalError;
     private Button buttonSubmit;
     private View rootLayout;
+    private ScrollView scrollView;
 
     // Date format for parsing/displaying
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
@@ -59,13 +65,16 @@ public class MainActivity extends AppCompatActivity {
         layoutName = findViewById(R.id.layoutName);
         layoutDate = findViewById(R.id.layoutDate);
         layoutEmail = findViewById(R.id.layoutEmail);
+        layoutNotes = findViewById(R.id.layoutNotes);
         editTextName = findViewById(R.id.editTextName);
         editTextDate = findViewById(R.id.editTextDate);
         editTextEmail = findViewById(R.id.editTextEmail);
+        editTextNotes = findViewById(R.id.editTextNotes);
         radioGroupMarital = findViewById(R.id.radioGroupMarital);
         textViewMaritalError = findViewById(R.id.textViewMaritalError);
         buttonSubmit = findViewById(R.id.buttonSubmit);
         rootLayout = findViewById(android.R.id.content);
+        scrollView = findViewById(R.id.scrollView);
 
         // Restore state
         if (savedInstanceState != null) {
@@ -75,14 +84,29 @@ public class MainActivity extends AppCompatActivity {
         // Clear errors on text change
         setupErrorClearing();
 
-        // Open the calendar when the date field is tapped
-        editTextDate.setOnClickListener(v -> showDatePicker());
+        // Open the calendar when the date field is tapped - use touch listener
+        // to ensure single-tap works when focusable
+        editTextDate.setOnTouchListener((v, event) -> {
+            if (event.getAction() == MotionEvent.ACTION_UP) {
+                Log.d(LOG_TAG, "Date field tapped, showing picker");
+                v.performClick();
+                showDatePicker();
+                return true;
+            }
+            return false;
+        });
 
         // Open the calendar when the end icon is tapped
-        layoutDate.setEndIconOnClickListener(v -> showDatePicker());
+        layoutDate.setEndIconOnClickListener(v -> {
+            Log.d(LOG_TAG, "Date picker icon tapped");
+            showDatePicker();
+        });
 
         // Show the summary dialog on submit
-        buttonSubmit.setOnClickListener(v -> onSubmit());
+        buttonSubmit.setOnClickListener(v -> {
+            Log.d(LOG_TAG, "Submit button clicked");
+            onSubmit();
+        });
     }
 
     @Override
@@ -215,24 +239,34 @@ public class MainActivity extends AppCompatActivity {
         String name = editTextName.getText().toString().trim();
         String date = editTextDate.getText().toString().trim();
         String email = editTextEmail.getText().toString().trim();
+        String notes = editTextNotes.getText().toString().trim();
+
+        Log.d(LOG_TAG, "Validating form - name: " + name + ", date: " + date + ", email: " + email);
 
         firstInvalidField = null;
 
         if (!validate(name, date, email)) {
+            Log.d(LOG_TAG, "Validation failed, first invalid field: " + firstInvalidField);
             // Focus first invalid field and hide keyboard
             if (firstInvalidField != null) {
                 firstInvalidField.requestFocus();
+                scrollToView(firstInvalidField);
                 hideKeyboard(firstInvalidField);
             }
             return;
         }
+
+        Log.d(LOG_TAG, "Validation passed");
 
         // Read selected marital status from RadioButton's text
         int checkedId = radioGroupMarital.getCheckedRadioButtonId();
         RadioButton checkedRadioButton = findViewById(checkedId);
         String maritalStatus = checkedRadioButton != null ? checkedRadioButton.getText().toString() : "";
 
-        String message = getString(R.string.dialog_summary, name, date, email, maritalStatus);
+        // Use "None" if notes is empty
+        String notesDisplay = notes.isEmpty() ? getString(R.string.notes_none) : notes;
+
+        String message = getString(R.string.dialog_summary, name, date, email, maritalStatus, notesDisplay);
 
         // Show confirmation dialog
         new AlertDialog.Builder(MainActivity.this)
@@ -241,20 +275,32 @@ public class MainActivity extends AppCompatActivity {
                 .setCancelable(false)
                 .setPositiveButton(R.string.dialog_button_confirm, (dialog, which) -> {
                     // Confirm: show Snackbar and reset form
+                    Log.d(LOG_TAG, "Form confirmed, resetting");
                     Snackbar.make(rootLayout, R.string.snackbar_submitted, Snackbar.LENGTH_LONG).show();
                     resetForm();
                 })
                 .setNegativeButton(R.string.dialog_button_edit, (dialog, which) -> {
                     // Edit: just close dialog
+                    Log.d(LOG_TAG, "Form edit requested");
                     dialog.dismiss();
                 })
                 .show();
+    }
+
+    private void scrollToView(View view) {
+        if (scrollView != null && view != null) {
+            // Scroll the view into view smoothly
+            scrollView.post(() -> {
+                view.requestRectangleOnScreen(new android.graphics.Rect(view.getLeft(), view.getTop(), view.getRight(), view.getBottom()), true);
+            });
+        }
     }
 
     private void resetForm() {
         editTextName.setText("");
         editTextDate.setText("");
         editTextEmail.setText("");
+        editTextNotes.setText("");
         radioGroupMarital.clearCheck();
         selectedDob = null;
         layoutName.setError(null);
@@ -266,6 +312,7 @@ public class MainActivity extends AppCompatActivity {
     private boolean validate(String name, String date, String email) {
         boolean valid = true;
 
+        Log.d(LOG_TAG, "Starting validation");
         layoutName.setError(null);
         layoutDate.setError(null);
         layoutEmail.setError(null);
@@ -273,6 +320,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Validate name using Validators
         if (!Validators.isValidName(name)) {
+            Log.d(LOG_TAG, "Name validation failed");
             layoutName.setError(getString(R.string.error_name_required));
             if (firstInvalidField == null) firstInvalidField = editTextName;
             valid = false;
@@ -280,6 +328,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Validate date
         if (TextUtils.isEmpty(date)) {
+            Log.d(LOG_TAG, "Date validation failed: empty");
             layoutDate.setError(getString(R.string.error_date_required));
             if (firstInvalidField == null) firstInvalidField = editTextDate;
             valid = false;
@@ -291,11 +340,13 @@ public class MainActivity extends AppCompatActivity {
                 dobCal.setTime(dob);
                 Calendar today = Calendar.getInstance();
                 if (!Validators.isAdult(dobCal, today)) {
+                    Log.d(LOG_TAG, "Date validation failed: underage");
                     layoutDate.setError(getString(R.string.error_date_underage));
                     if (firstInvalidField == null) firstInvalidField = editTextDate;
                     valid = false;
                 }
             } catch (Exception e) {
+                Log.d(LOG_TAG, "Date validation failed: parse error");
                 layoutDate.setError(getString(R.string.error_date_required));
                 if (firstInvalidField == null) firstInvalidField = editTextDate;
                 valid = false;
@@ -304,15 +355,17 @@ public class MainActivity extends AppCompatActivity {
 
         // Validate email using Validators
         if (!Validators.isValidEmail(email)) {
+            Log.d(LOG_TAG, "Email validation failed");
             layoutEmail.setError(getString(R.string.error_email_invalid));
             if (firstInvalidField == null) firstInvalidField = editTextEmail;
             valid = false;
         }
 
-        // Validate marital status
+        // Validate marital status - use radioSingle as focusable target
         if (radioGroupMarital.getCheckedRadioButtonId() == -1) {
+            Log.d(LOG_TAG, "Marital status validation failed");
             textViewMaritalError.setVisibility(View.VISIBLE);
-            if (firstInvalidField == null) firstInvalidField = radioGroupMarital;
+            if (firstInvalidField == null) firstInvalidField = findViewById(R.id.radioSingle);
             valid = false;
         }
 
